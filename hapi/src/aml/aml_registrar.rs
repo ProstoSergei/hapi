@@ -3,11 +3,12 @@ use near_sdk::collections::UnorderedMap;
 use near_sdk::{AccountId, BorshStorageKey};
 use serde::{Deserialize, Serialize};
 
-#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, PartialEq, Debug)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, PartialEq, Eq, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub enum Category {
     // for all unspecified categories
     All,
+    // HAPI returns 'None' when address wasn't find in database
     None,
     // Wallet service - custodial or mixed wallets
     WalletService,
@@ -74,6 +75,19 @@ pub trait AmlManager {
 }
 
 impl AmlManager for AML {
+    /// Returns the aml accountId and vector of added categories with accepted risk levels.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use near_sdk::{AccountId, collections::UnorderedMap};
+    /// use hapi::aml::*;
+    ///
+    /// let aml_account :AccountId = AccountId::new_unchecked("aml".to_string());
+    ///
+    /// let aml:AML = AML::new(aml_account, Category::All, INITIAL_MAX_RISK_LEVEL);
+    /// println!("{:?}", aml.get_aml());
+    /// ```
     fn get_aml(&self) -> (&AccountId, Vec<(Category, RiskScore)>) {
         (
             &self.account_id,
@@ -84,10 +98,44 @@ impl AmlManager for AML {
         )
     }
 
+    /// Updates account id of aml service.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use near_sdk::{AccountId, collections::UnorderedMap};
+    /// use hapi::aml::*;
+    ///
+    /// let aml_account :AccountId = AccountId::new_unchecked("aml".to_string());
+    ///
+    /// let mut aml:AML = AML::new(aml_account, Category::All, INITIAL_MAX_RISK_LEVEL);
+    ///
+    /// let new_aml_account :AccountId = AccountId::new_unchecked("new_aml".to_string());
+    /// aml.update_account_id(new_aml_account.clone());
+    ///
+    /// let (account_id, _) = aml.get_aml();
+    /// assert_eq!(*account_id, new_aml_account);
+    /// ```
     fn update_account_id(&mut self, account_id: AccountId) {
         self.account_id = account_id;
     }
 
+    /// Updates or add category with accepted risk score to aml conditions.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use near_sdk::{AccountId, collections::UnorderedMap};
+    /// use hapi::aml::*;
+    ///
+    /// let aml_account :AccountId = AccountId::new_unchecked("aml".to_string());
+    ///
+    /// let mut aml:AML = AML::new(aml_account, Category::All, INITIAL_MAX_RISK_LEVEL);
+    ///
+    /// aml.update_category(Category::Scam, 6);
+    ///
+    /// assert_eq!(aml.aml_conditions.get(&Category::Scam).unwrap(), 6);
+    /// ```
     fn update_category(&mut self, category: Category, accepted_risk_score: RiskScore) {
         assert!(
             accepted_risk_score <= INITIAL_MAX_RISK_LEVEL,
@@ -97,6 +145,23 @@ impl AmlManager for AML {
         self.aml_conditions.insert(&category, &accepted_risk_score);
     }
 
+    /// Removes category from aml conditions.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use near_sdk::{AccountId, collections::UnorderedMap};
+    /// use hapi::aml::*;
+    ///
+    /// let aml_account :AccountId = AccountId::new_unchecked("aml".to_string());
+    ///
+    /// let mut aml:AML = AML::new(aml_account, Category::All, INITIAL_MAX_RISK_LEVEL);
+    ///
+    /// aml.update_category(Category::Scam, 6);
+    /// aml.remove_category(Category::Scam);
+    ///
+    /// assert!(aml.aml_conditions.get(&Category::Scam).is_none());
+    /// ```
     fn remove_category(&mut self, category: Category) {
         assert!(category != Category::All);
         self.aml_conditions.remove(&category);

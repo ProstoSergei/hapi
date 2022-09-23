@@ -3,6 +3,13 @@ name = "hapi"
 authors = ["HAPI"]
 version = "0.1.0"
 edition = "2021"
+description = """
+Rust library for using HAPI protocol in cmart contracts on NEAR.
+"""
+readme = "README.md"
+categories = ["wasm"]
+license = "GPL-3.0"
+repository = "https://github.com/ProstoSergei/hapi"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
