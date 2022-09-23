@@ -3,7 +3,7 @@ use near_sdk::collections::UnorderedMap;
 use near_sdk::{AccountId, BorshStorageKey};
 use serde::{Deserialize, Serialize};
 
-#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, PartialEq, Debug)]
+#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, PartialEq, Eq, Debug)]
 #[serde(crate = "near_sdk::serde")]
 pub enum Category {
     // for all unspecified categories
