@@ -13,6 +13,7 @@ pub trait ExtAmlContract {
 }
 
 impl AML {
+    /// Checks the category according to the set level of risk. If the risk level is not set for this category, it checks the All category.
     pub fn assert_risk(&self, category_risk: CategoryRisk) {
         let (category, risk) = category_risk;
         if category != Category::None {
