@@ -52,7 +52,7 @@ pub enum Category {
 
 pub type RiskScore = u8;
 
-pub const INITIAL_MAX_RISK_LEVEL: RiskScore = 10;
+pub const MAX_RISK_LEVEL: RiskScore = 10;
 
 #[derive(BorshStorageKey, BorshSerialize)]
 enum StorageKey {
@@ -85,7 +85,7 @@ impl AmlManager for AML {
     ///
     /// let aml_account :AccountId = AccountId::new_unchecked("aml".to_string());
     ///
-    /// let aml:AML = AML::new(aml_account, Category::All, INITIAL_MAX_RISK_LEVEL);
+    /// let aml:AML = AML::new(aml_account, Category::All, MAX_RISK_LEVEL);
     /// println!("{:?}", aml.get_aml());
     /// ```
     fn get_aml(&self) -> (&AccountId, Vec<(Category, RiskScore)>) {
@@ -108,7 +108,7 @@ impl AmlManager for AML {
     ///
     /// let aml_account :AccountId = AccountId::new_unchecked("aml".to_string());
     ///
-    /// let mut aml:AML = AML::new(aml_account, Category::All, INITIAL_MAX_RISK_LEVEL);
+    /// let mut aml:AML = AML::new(aml_account, Category::All, MAX_RISK_LEVEL);
     ///
     /// let new_aml_account :AccountId = AccountId::new_unchecked("new_aml".to_string());
     /// aml.update_account_id(new_aml_account.clone());
@@ -130,7 +130,7 @@ impl AmlManager for AML {
     ///
     /// let aml_account :AccountId = AccountId::new_unchecked("aml".to_string());
     ///
-    /// let mut aml:AML = AML::new(aml_account, Category::All, INITIAL_MAX_RISK_LEVEL);
+    /// let mut aml:AML = AML::new(aml_account, Category::All, MAX_RISK_LEVEL);
     ///
     /// aml.update_category(Category::Scam, 6);
     ///
@@ -138,7 +138,7 @@ impl AmlManager for AML {
     /// ```
     fn update_category(&mut self, category: Category, accepted_risk_score: RiskScore) {
         assert!(
-            accepted_risk_score <= INITIAL_MAX_RISK_LEVEL,
+            accepted_risk_score <= MAX_RISK_LEVEL,
             "ERR_RISK_SCORE_IS_INVALID"
         );
         assert!(accepted_risk_score > 0, "ERR_RISK_SCORE_IS_INVALID");
@@ -155,7 +155,7 @@ impl AmlManager for AML {
     ///
     /// let aml_account :AccountId = AccountId::new_unchecked("aml".to_string());
     ///
-    /// let mut aml:AML = AML::new(aml_account, Category::All, INITIAL_MAX_RISK_LEVEL);
+    /// let mut aml:AML = AML::new(aml_account, Category::All, MAX_RISK_LEVEL);
     ///
     /// aml.update_category(Category::Scam, 6);
     /// aml.remove_category(Category::Scam);
@@ -169,12 +169,12 @@ impl AmlManager for AML {
 }
 
 impl AML {
-    pub fn new(account_id: AccountId, category: Category, accepted_risk_score: RiskScore) -> AML {
-        let mut aml_conditions = UnorderedMap::new(StorageKey::AmlCategory);
-        aml_conditions.insert(&category, &accepted_risk_score);
-        Self {
+    pub fn new(account_id: AccountId, accepted_risk_score: RiskScore) -> AML {
+        let mut aml = Self {
             account_id,
-            aml_conditions,
-        }
+            aml_conditions: UnorderedMap::new(StorageKey::AmlCategory),
+        };
+        aml.update_category(Category::All, accepted_risk_score);
+        aml
     }
 }
