@@ -61,8 +61,8 @@ enum StorageKey {
 
 #[derive(BorshSerialize, BorshDeserialize, Debug)]
 pub struct AML {
-    pub account_id: AccountId,
-    pub aml_conditions: UnorderedMap<Category, RiskScore>,
+    pub(crate) account_id: AccountId,
+    pub(crate) aml_conditions: UnorderedMap<Category, RiskScore>,
 }
 
 pub trait AmlManager {
