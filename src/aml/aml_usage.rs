@@ -1,4 +1,4 @@
-use near_sdk::{ext_contract, Gas, AccountId};
+use near_sdk::{ext_contract, AccountId, Gas};
 
 use super::{Category, RiskScore, AML};
 
@@ -27,5 +27,9 @@ impl AML {
 
             assert!(risk <= accepted_risk, "ERR_AML_NOT_ALLOWED");
         }
+    }
+
+    pub fn get_account(&self) -> AccountId {
+        self.account_id.clone()
     }
 }
